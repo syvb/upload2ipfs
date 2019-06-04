@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+  <head>
+    <meta charset="utf-8">
+    <title>Upload to IPFS</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="canonical" href="https://upload2ipfs.smitop.com/" />
+    <meta name="description" content="Upload files to the IPFS network using this simple tool.">
+    <link rel="me" href="https://smitop.com/" type="text/html">
+    <link rel="dns-prefetch" href="https://ipfs.infura.io:5001/api/v0/add">
+    <script type="text/javascript">
+      function usingGateway() {
+        var gateways = ["ipfs.io","gateway.ipfs.io","ipfs.infura.io","rx14.co.uk","ninetailed.ninja","upload.global","ipfs.globalupload.io","ipfs.jes.xxx","catalunya.network","siderus.io","eu.siderus.io","na.siderus.io","ap.siderus.io","ipfs.eternum.io","hardbin.com","ipfs.macholibre.org","ipfs.works","ipfs.wa.hle.rs","api.wisdom.sh","gateway.blocksec.com","ipfs.renehsz.com","cloudflare-ipfs.com","ipns.co","ipfs.netw0rk.io","gateway.swedneck.xyz","ipfs.mrh.io","gateway.originprotocol.com","ipfs.dapps.earth","gateway.pinata.cloud","ipfs.doolta.com","ipfs.sloppyta.co","ipfs.busy.org","ipfs.greyh.at","gateway.serph.network","jorropo.ovh","gateway.temporal.cloud","ipfs.fooock.com","ipfstube.erindachtler.me","cdn.cwinfo.net","ipfs.privacytools.io"];
+        if (gateways.indexOf(location.host) > -1) return true;
+        return false;
+      }
+      window.addEventListener("load", function () {
+        if (usingGateway()) {
+          document.getElementById("using-gateway").style.display = "block";
+        }
+        document.getElementById("addForm").addEventListener("submit", function (e) {
+          e.preventDefault();
+          var files = document.getElementById("file").files;
+          if (files.length === 0) return;
+          var fd = new FormData();
+          document.getElementById("loading").style.display = "block";
+          document.getElementById("submit").disabled = true;
+          for (var i = 0; i < files.length; i++) {
+            var file = files[i];
+            fd.append("file", file);
+          }
+          var req = new XMLHttpRequest();
+          req.addEventListener("error", function () {
+            alert("There was an error uploading a file: " + file.name);
+          });
+          req.addEventListener("load", function (e) {
+            var lines = req.responseText.split("\n");
+            lines.pop();
+            var json = lines.map(function (l) { return JSON.parse(l) });
+            document.getElementById("loading").style.display = "none";
+            document.getElementById("submit").disabled = false;
+
+            document.getElementById("hashes").innerHTML =
+              json.map(function (obj) {
+                return "<li><a href='https://cloudflare-ipfs.com/ipfs/" + obj.Hash + "'>" + obj.Hash + "</a> (" + obj.Name + ")</li>");
+              })
+              .join("");
+            document.getElementById("hashes").style.display = "block";
+
+            document.getElementById("pin-code").innerText = json
+              .map(obj => "ipfs pin add " + obj.Hash)
+              .join("; ")
+            document.getElementById("pin-div").style.display = "block";
+
+            // warm caches
+            json.forEach(function (file) {
+              var req = new XMLHttpRequest();
+              req.open("GET", "https://ipfs.infura.io/ipfs/" + file.Hash);
+              req.send();
+            });
+          });
+          req.open("POST", "https://ipfs.infura.io:5001/api/v0/add");
+          req.send(fd);
+          document.getElementById("addForm").reset();
+        });
+      });
+    </script>
+    <style>
+      body {
+        font-family: sans-serif;
+      }
+      h1 {
+        margin-top: 0.33em;
+        margin-bottom: 0.5em;
+      }
+      #using-gateway {
+        background: #ff857c;
+        margin-bottom: 1em;
+        border: 3px dashed red;
+        padding: 0.333em;
+        width: fit-content;
+        font-size: 1.5em;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Upload files to IPFS</h1>
+    <div id="using-gateway" style="display: none;">
+      It looks like you're accessing this via an IPFS gateway.
+      <a href="https://upload2ipfs.smitop.com">Visit the offical site.</a>
+    </div>
+    <div>
+      This will upload files to the <a href="https://ipfs.io">IPFS</a> network,
+      using <a href="https://infura.io">Infura</a>. You can hold <kbd>CTRL</kbd>
+      while selecting files to upload multiple at once.
+    </div>
+    <noscript>
+      It looks like you have JavaScript disabled. You'll get JSON data shown to
+      you instead of a list of links.
+    </noscript>
+    <form id="addForm" action="https://ipfs.infura.io:5001/api/v0/add" method="post" enctype="multipart/form-data">
+      <div>
+        <label for="file">Choose file(s): </label><input type="file" name="file" id="file" multiple>
+      </div>
+      <div>
+        <input type="submit" value="Upload" id="submit">
+      </div>
+    </form>
+    <div id="loading" style="display: none;">
+      Loading, one sec.
+    </div>
+    <ul id="hashes" style="display: none;">
+    </ul>
+    <div id="pin-div" style="display: none;">
+      Pin these files to your local IPFS node:
+      <code id="pin-code">
+        One sec
+      </code>
+    </div>
+    <footer style="font-size: 0.8em; margin-top: 2em;">
+      Created by <a href="https://smitop.com">Smitop</a>.
+    </footer>
+  </body>
+</html>
