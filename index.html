@@ -18,7 +18,8 @@
         if (usingGateway()) {
           document.getElementById("using-gateway").style.display = "block";
         }
-        document.getElementById("addForm").addEventListener("submit", function (e) {
+        document.getElementById("submit").style.display = "block";
+        document.getElementById("submit").addEventListener("click", function (e) {
           e.preventDefault();
           var files = document.getElementById("file").files;
           if (files.length === 0) return;
@@ -42,11 +43,11 @@
 
             document.getElementById("hashes").innerHTML =
               json.map(function (obj) {
-                return "<li><a href='https://cloudflare-ipfs.com/ipfs/" + obj.Hash + "'>" + obj.Hash + "</a> (" + obj.Name + ")</li>");
+                return "<li><a href='https://cloudflare-ipfs.com/ipfs/" + obj.Hash + "'>" + obj.Hash + "</a> (" + obj.Name + ")</li>";
               })
               .join("");
             document.getElementById("hashes").style.display = "block";
-            document.getElementById("pin-code").innerText = json;
+            document.getElementById("pin-code").innerText = json
               .map(obj => "ipfs pin add " + obj.Hash)
               .join("; ")
             document.getElementById("pin-div").style.display = "block";
@@ -101,10 +102,13 @@
       <div>
         <label for="file">Choose file(s): </label><input type="file" name="file" id="file" multiple>
       </div>
-      <div>
-        <input type="submit" value="Upload" id="submit">
-      </div>
+      <noscript>
+        <input type="submit" value="Upload" id="no-js-submit">
+      </noscript>
     </form>
+    <div>
+      <button style="display: none;" id="submit">Upload</button>
+    </div>
     <div id="loading" style="display: none;">
       Loading, one sec.
     </div>
