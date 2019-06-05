@@ -46,8 +46,7 @@
               })
               .join("");
             document.getElementById("hashes").style.display = "block";
-
-            document.getElementById("pin-code").innerText = json
+            document.getElementById("pin-code").innerText = json;
               .map(obj => "ipfs pin add " + obj.Hash)
               .join("; ")
             document.getElementById("pin-div").style.display = "block";
