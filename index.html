@@ -55,11 +55,11 @@
             // warm caches
             json.forEach(function (file) {
               var req = new XMLHttpRequest();
-              req.open("GET", "https://ipfs.infura.io/ipfs/" + file.Hash);
+              req.open("GET", "https://ipfs.infura.io:5001/api/v0/pin/add?arg=/ipfs/" + file.Hash);
               req.send();
             });
           });
-          req.open("POST", "https://ipfs.infura.io:5001/api/v0/add");
+          req.open("POST", "https://ipfs.infura.io:5001/api/v0/add?pin=true");
           req.send(fd);
           document.getElementById("addForm").reset();
         });
